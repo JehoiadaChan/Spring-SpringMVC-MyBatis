@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:properties/database.properties"/>
+
+    <!--数据源配置-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <!--驱动-->
+        <property name="driverClassName" value="${db.driver}"/>
+        <!-- 数据库地址 -->
+        <property name="url" value="${db.url}"/>
+        <!-- 用户名 -->
+        <property name="username" value="${db.user}"/>
+        <!-- 密码 -->
+        <property name="password" value="${db.password}"/>
+        <!-- 最大连接池数量 -->
+        <property name="maxActive" value="${db.maxActive}"/>
+        <!-- 初始化物理连接个数 -->
+        <property name="initialSize" value="${db.initialSize}"/>
+        <!-- 最小连接池数量 -->
+        <property name="minIdle" value="${db.minIdle}"/>
+        <!-- 最大等待时间 -->
+        <property name="maxWait" value="${db.maxWait}"/>
+        <property name="timeBetweenEvictionRunsMillis" value="${db.timeBetweenEvictionRunsMillis}"/>
+        <property name="minEvictableIdleTimeMillis" value="${db.minEvictableIdleTimeMillis}"/>
+        <!-- 检测连接是否有效的SQL -->
+        <property name="validationQuery" value="${db.validationQuery}"/>
+        <property name="testWhileIdle" value="${db.testWhileIdle}"/>
+        <!-- 申请连接时是否执行validationQuery -->
+        <property name="testOnBorrow" value="${db.testOnBorrow}"/>
+        <!-- 归还连接时是否执行validationQuery -->
+        <property name="testOnReturn" value="${db.testOnReturn}"/>
+    </bean>
+
+    <!-- 配置Mybatis的文件 ，mapperLocations配置**Mapper.xml文件位置，configLocation配置mybatis-config文件位置-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+        <property name="configLocation" value="classpath:mybatis/mybatis-config.xml"/>
+    </bean>
+
+    <!-- 自动扫描了所有的XxxxMapper.xml对应的mapper接口文件，这样就不用一个一个手动配置Mpper的映射了，
+           只要Mapper接口类和Mapper映射文件对应起来就可以了 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.demo.dao"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <!-- 事物管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+</beans>
